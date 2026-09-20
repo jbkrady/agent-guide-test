@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lancer la routine</title>
+  <style>
+    :root { --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --line: #d6d3d1; --accent: #1c1917; --accent-fg: #fafaf9; --ok: #15803d; --err: #b91c1c; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #1c1917; --fg: #fafaf9; --muted: #a8a29e; --line: #44403c; --accent: #fafaf9; --accent-fg: #1c1917; --ok: #4ade80; --err: #f87171; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
+    main { width: 100%; max-width: 420px; }
+    h1 { font-size: 1.4rem; margin: 0 0 1.25rem; }
+    label { display: block; font-size: .9rem; color: var(--muted); margin-bottom: .35rem; }
+    input, button { width: 100%; font: inherit; padding: .7rem .8rem; border-radius: 8px; }
+    input { border: 1px solid var(--line); background: transparent; color: inherit; }
+    button { margin-top: .9rem; border: 0; background: var(--accent); color: var(--accent-fg); cursor: pointer; font-weight: 600; }
+    button:disabled { opacity: .5; cursor: wait; }
+    #statut { min-height: 1.5rem; margin-top: 1rem; font-size: .95rem; }
+    #statut.ok { color: var(--ok); }
+    #statut.err { color: var(--err); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Lancer la routine</h1>
+    <form id="form">
+      <label for="sujet">Sujet</label>
+      <input id="sujet" name="sujet" type="text" required maxlength="500" autocomplete="off" placeholder="Ex. : actualité de l'IA cette semaine">
+      <button id="bouton" type="submit">Lancer</button>
+    </form>
+    <p id="statut" role="status"></p>
+  </main>
+  <script>
+    const form = document.getElementById('form');
+    const bouton = document.getElementById('bouton');
+    const statut = document.getElementById('statut');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const sujet = form.sujet.value.trim();
+      if (!sujet) return;
+      bouton.disabled = true;
+      statut.className = '';
+      statut.textContent = 'Envoi en cours…';
+      try {
+        const rep = await fetch('/api/lancer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sujet })
+        });
+        const data = await rep.json().catch(() => ({}));
+        if (!rep.ok) throw new Error(data.erreur || 'Erreur ' + rep.status);
+        statut.className = 'ok';
+        statut.textContent = 'Routine lancée.' + (data.url ? ' Session : ' + data.url : '');
+      } catch (err) {
+        statut.className = 'err';
+        statut.textContent = err.message;
+      } finally {
+        bouton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
