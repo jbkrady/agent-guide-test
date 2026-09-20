@@ -21,6 +21,7 @@
     #statut { min-height: 1.5rem; margin-top: 1rem; font-size: .95rem; }
     #statut.ok { color: var(--ok); }
     #statut.err { color: var(--err); }
+    #statut a { color: inherit; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -54,7 +55,15 @@
         const data = await rep.json().catch(() => ({}));
         if (!rep.ok) throw new Error(data.erreur || 'Erreur ' + rep.status);
         statut.className = 'ok';
-        statut.textContent = 'Routine lancée.' + (data.url ? ' Session : ' + data.url : '');
+        statut.textContent = 'Routine lancée.';
+        if (typeof data.url === 'string' && data.url.startsWith('https://')) {
+          const lien = document.createElement('a');
+          lien.href = data.url;
+          lien.target = '_blank';
+          lien.rel = 'noopener noreferrer';
+          lien.textContent = 'Ouvrir la session';
+          statut.append(' ', lien);
+        }
       } catch (err) {
         statut.className = 'err';
         statut.textContent = err.message;
