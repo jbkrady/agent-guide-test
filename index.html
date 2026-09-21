@@ -4,72 +4,259 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lancer la routine</title>
+  <meta name="description" content="Écris un sujet : un agent part chercher, vérifier et résumer.">
   <style>
-    :root { --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --line: #d6d3d1; --accent: #1c1917; --accent-fg: #fafaf9; --ok: #15803d; --err: #b91c1c; }
-    @media (prefers-color-scheme: dark) {
-      :root { --bg: #1c1917; --fg: #fafaf9; --muted: #a8a29e; --line: #44403c; --accent: #fafaf9; --accent-fg: #1c1917; --ok: #4ade80; --err: #f87171; }
+    :root {
+      color-scheme: light;
+      --ink: oklch(0.15 0.002 90);
+      --ink-soft: oklch(0.32 0.004 90);
+      --muted: oklch(0.48 0.002 90);
+      --faint: oklch(0.56 0.002 90);
+      --paper: oklch(0.985 0.001 90);
+      --card: oklch(0.99 0.001 90);
+      --line: oklch(0.89 0.002 90);
+      --line-soft: oklch(0.92 0.002 90);
+      --err: oklch(0.45 0.16 28);
     }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
-    main { width: 100%; max-width: 420px; }
-    h1 { font-size: 1.4rem; margin: 0 0 1.25rem; }
-    label { display: block; font-size: .9rem; color: var(--muted); margin-bottom: .35rem; }
-    input, button { width: 100%; font: inherit; padding: .7rem .8rem; border-radius: 8px; }
-    input { border: 1px solid var(--line); background: transparent; color: inherit; }
-    button { margin-top: .9rem; border: 0; background: var(--accent); color: var(--accent-fg); cursor: pointer; font-weight: 600; }
-    button:disabled { opacity: .5; cursor: wait; }
-    #statut { min-height: 1.5rem; margin-top: 1rem; font-size: .95rem; }
-    #statut.ok { color: var(--ok); }
-    #statut.err { color: var(--err); }
-    #statut a { color: inherit; font-weight: 600; }
+    html, body { margin: 0; }
+    body {
+      min-height: 100vh;
+      background-color: var(--paper);
+      background-image: linear-gradient(180deg,
+        oklch(0.68 0.23 22) 0%,
+        oklch(0.72 0.27 350) 26%,
+        oklch(0.9 0.11 340) 50%,
+        oklch(0.96 0.02 330) 64%,
+        var(--paper) 76%);
+      background-size: 100% 880px;
+      background-repeat: no-repeat;
+      color: var(--ink);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    input, textarea, button { font: inherit; }
+    a { color: inherit; }
+    :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+    .page { max-width: 1280px; margin: 0 auto; padding: 26px 40px 56px; }
+
+    header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-bottom: 46px; }
+    .marque { font-weight: 700; font-size: 17px; letter-spacing: .24em; text-transform: uppercase; grid-column: 2; }
+    .projet { grid-column: 3; justify-self: end; display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; text-decoration: none; opacity: .72; }
+    .projet:hover { opacity: 1; }
+
+    h1 {
+      margin: 0 auto 26px; max-width: 1000px; text-align: center;
+      font-size: clamp(46px, 8.1vw, 104px); line-height: .9; letter-spacing: -.045em; font-weight: 700;
+      text-wrap: balance;
+    }
+    .intro { margin: 0 auto 44px; max-width: 620px; text-align: center; font-size: 20px; line-height: 1.4; font-weight: 500; color: var(--ink-soft); text-wrap: pretty; }
+
+    .carte { max-width: 880px; margin: 0 auto; border: 1px solid var(--line); border-radius: 18px; background: var(--card); box-shadow: 0 22px 60px -38px oklch(0 0 0 / .6); }
+    .saisie { padding: 24px 26px 18px; }
+    textarea { width: 100%; resize: none; border: 0; outline: none; background: transparent; color: var(--ink); font-size: 19px; line-height: 1.45; }
+    textarea::placeholder { color: var(--faint); }
+    .actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 10px; }
+    .raccourci { font-family: ui-monospace, 'IBM Plex Mono', Menlo, monospace; font-size: 12.5px; color: var(--faint); }
+    #bouton {
+      border: 0; border-radius: 11px; padding: 12px 20px; font-size: 15.5px; font-weight: 700;
+      background: var(--ink); color: var(--card); cursor: pointer; transition: all .16s ease;
+    }
+    #bouton:disabled { background: var(--line-soft); color: oklch(0.6 0.002 90); cursor: not-allowed; }
+
+    .idees { border-top: 1px solid var(--line-soft); padding: 16px 26px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .idees span { font-size: 14px; color: var(--muted); }
+    .idee {
+      border: 1px solid oklch(0.88 0.002 90); background: var(--paper); color: oklch(0.2 0.002 90);
+      border-radius: 9px; padding: 8px 13px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all .15s ease;
+    }
+    .idee:hover { border-color: oklch(0.6 0.002 90); }
+
+    #statut { max-width: 880px; margin: 22px auto 0; min-height: 68px; }
+    #statut > * { animation: monte .3s ease both; }
+    @keyframes monte { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @keyframes pouls { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+    .envoi { display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 15px; }
+    .point { width: 9px; height: 9px; border-radius: 50%; background: var(--ink); animation: pouls 1s ease-in-out infinite; }
+    .ok { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; text-align: center; }
+    .ok strong { font-size: 16px; font-weight: 600; }
+    .ok a { font-size: 15px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+    .echec {
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      border: 1px solid oklch(0.82 0.1 25); border-radius: 14px; background: oklch(0.97 0.02 25); padding: 18px 20px;
+    }
+    .echec div { display: grid; gap: 3px; }
+    .echec strong { font-size: 17px; font-weight: 700; color: var(--err); }
+    .echec span { font-size: 14.5px; color: oklch(0.45 0.04 30); }
+    .echec small { font-size: 12.5px; color: oklch(0.5 0.04 30); }
+    #reessayer {
+      border: 1px solid oklch(0.62 0.16 28); background: transparent; color: var(--err);
+      border-radius: 10px; padding: 10px 16px; font-size: 14.5px; cursor: pointer; white-space: nowrap;
+    }
+
+    .aide { max-width: 880px; margin: 18px auto 0; text-align: center; }
+    #bascule { border: 0; background: transparent; color: oklch(0.52 0.002 90); font-size: 13.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    #bascule:hover { color: oklch(0.2 0.002 90); }
+    #fleche { display: inline-block; transition: transform .2s ease; }
+    #bascule[aria-expanded="true"] #fleche { transform: rotate(90deg); }
+    #explication { margin: 10px auto 0; max-width: 560px; font-size: 14.5px; line-height: 1.6; color: var(--muted); text-wrap: pretty; animation: monte .25s ease both; }
+
+    .visuellement-cache { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    @media (max-width: 640px) {
+      .page { padding: 18px 16px 40px; }
+      header { margin-bottom: 32px; }
+      .marque { font-size: 15px; }
+      .intro { font-size: 17px; margin-bottom: 30px; }
+      .saisie { padding: 18px 18px 14px; }
+      .idees { padding: 14px 18px; }
+      .echec { flex-direction: column; align-items: flex-start; }
+      .raccourci { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Lancer la routine</h1>
-    <form id="form">
-      <label for="sujet">Sujet</label>
-      <input id="sujet" name="sujet" type="text" required maxlength="500" autocomplete="off" placeholder="Ex. : actualité de l'IA cette semaine">
-      <button id="bouton" type="submit">Lancer</button>
-    </form>
-    <p id="statut" role="status"></p>
-  </main>
+  <div class="page">
+    <header>
+      <span class="marque">Routine</span>
+      <a class="projet" href="https://github.com/jbkrady/agent-guide-test" target="_blank" rel="noopener noreferrer">
+        <svg width="17" height="17" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path></svg>
+        <span>Le projet</span>
+      </a>
+    </header>
+
+    <main>
+      <h1>Ta veille tient<br>en une phrase</h1>
+      <p class="intro">Écris un sujet — un agent part chercher, vérifier et résumer. Tu gardes la main.</p>
+
+      <form id="form" class="carte">
+        <div class="saisie">
+          <label class="visuellement-cache" for="sujet">Sujet</label>
+          <textarea id="sujet" name="sujet" rows="3" maxlength="500" placeholder="Décris le sujet à suivre…"></textarea>
+          <div class="actions">
+            <span class="raccourci" aria-hidden="true">⌘↵</span>
+            <button id="bouton" type="submit" disabled>Lancer</button>
+          </div>
+        </div>
+        <div class="idees">
+          <span>Pas d'idée ? Essaie :</span>
+          <button type="button" class="idee" data-sujet="l'actualité de l'IA cette semaine">Actualité de l'IA</button>
+          <button type="button" class="idee" data-sujet="les sorties produit de nos concurrents">Concurrents</button>
+          <button type="button" class="idee" data-sujet="ce qui bouge sur le marché de l'emploi en Côte d'Ivoire">Emploi en Côte d'Ivoire</button>
+          <button type="button" class="idee" data-sujet="les levées de fonds du secteur ce mois-ci">Levées de fonds</button>
+        </div>
+      </form>
+
+      <div id="statut" role="status" aria-live="polite"></div>
+
+      <div class="aide">
+        <button id="bascule" type="button" aria-expanded="false" aria-controls="explication">
+          <span id="fleche" aria-hidden="true">›</span>
+          <span>Comment ça marche</span>
+        </button>
+        <p id="explication" hidden>Un agent de veille cherche sur le web, ouvre les sources pour vérifier, écarte les doublons et rend une synthèse avec ses liens. Il n'invente rien : ce qu'il n'a pas pu vérifier, il le dit.</p>
+      </div>
+    </main>
+  </div>
+
   <script>
     const form = document.getElementById('form');
+    const sujet = document.getElementById('sujet');
     const bouton = document.getElementById('bouton');
     const statut = document.getElementById('statut');
+    const bascule = document.getElementById('bascule');
+    const explication = document.getElementById('explication');
+    let enCours = false;
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const sujet = form.sujet.value.trim();
-      if (!sujet) return;
-      bouton.disabled = true;
-      statut.className = '';
-      statut.textContent = 'Envoi en cours…';
+    function majBouton() {
+      bouton.disabled = enCours || sujet.value.trim().length === 0;
+      bouton.textContent = enCours ? 'Envoi…' : 'Lancer';
+    }
+
+    function afficher(...noeuds) {
+      statut.replaceChildren(...noeuds);
+    }
+
+    function el(tag, classe, texte) {
+      const n = document.createElement(tag);
+      if (classe) n.className = classe;
+      if (texte) n.textContent = texte;
+      return n;
+    }
+
+    function afficherEnvoi() {
+      const bloc = el('div', 'envoi');
+      bloc.append(el('span', 'point'), el('span', '', 'On lui passe le sujet…'));
+      afficher(bloc);
+    }
+
+    function afficherOk(url) {
+      const bloc = el('div', 'ok');
+      bloc.append(el('strong', '', "C'est parti — tu peux fermer cette page."));
+      if (typeof url === 'string' && url.startsWith('https://')) {
+        const lien = el('a', '', 'Suivre le travail ↗');
+        lien.href = url;
+        lien.target = '_blank';
+        lien.rel = 'noopener noreferrer';
+        bloc.append(lien);
+      }
+      afficher(bloc);
+    }
+
+    function afficherEchec(detail) {
+      const bloc = el('div', 'echec');
+      const texte = el('div');
+      texte.append(el('strong', '', "Elle n'a pas répondu"), el('span', '', "Rien n'a été lancé, ton sujet est gardé."));
+      if (detail) texte.append(el('small', '', detail));
+      const retour = el('button', '', 'Réessayer');
+      retour.id = 'reessayer';
+      retour.type = 'button';
+      retour.addEventListener('click', () => form.requestSubmit());
+      bloc.append(texte, retour);
+      afficher(bloc);
+    }
+
+    async function lancer() {
+      const texte = sujet.value.trim();
+      if (!texte || enCours) return;
+      enCours = true;
+      majBouton();
+      afficherEnvoi();
       try {
         const rep = await fetch('/api/lancer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sujet })
+          body: JSON.stringify({ sujet: texte })
         });
         const data = await rep.json().catch(() => ({}));
         if (!rep.ok) throw new Error(data.erreur || 'Erreur ' + rep.status);
-        statut.className = 'ok';
-        statut.textContent = 'Routine lancée.';
-        if (typeof data.url === 'string' && data.url.startsWith('https://')) {
-          const lien = document.createElement('a');
-          lien.href = data.url;
-          lien.target = '_blank';
-          lien.rel = 'noopener noreferrer';
-          lien.textContent = 'Ouvrir la session';
-          statut.append(' ', lien);
-        }
+        afficherOk(data.url);
       } catch (err) {
-        statut.className = 'err';
-        statut.textContent = err.message;
+        afficherEchec(err.message);
       } finally {
-        bouton.disabled = false;
+        enCours = false;
+        majBouton();
       }
+    }
+
+    form.addEventListener('submit', (e) => { e.preventDefault(); lancer(); });
+    sujet.addEventListener('input', majBouton);
+    sujet.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); form.requestSubmit(); }
+    });
+    document.querySelectorAll('.idee').forEach((b) => b.addEventListener('click', () => {
+      sujet.value = b.dataset.sujet;
+      majBouton();
+      sujet.focus();
+    }));
+    bascule.addEventListener('click', () => {
+      const ouvert = bascule.getAttribute('aria-expanded') === 'true';
+      bascule.setAttribute('aria-expanded', String(!ouvert));
+      explication.hidden = ouvert;
     });
   </script>
 </body>

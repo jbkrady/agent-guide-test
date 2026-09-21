@@ -27,8 +27,10 @@ Page web « Lancer la routine » : un champ « Sujet » et un bouton qui déclen
 ## Page `index.html`
 
 - Appelle `fetch('/api/lancer')` en adresse relative : elle ne fonctionne donc que servie par Vercel, pas en `file://`.
-- Le lien de session est construit avec le DOM (`createElement`, `textContent`), pas avec `innerHTML`, et seulement si l'adresse commence par `https://`. Garder cette approche.
-- Thème clair/sombre via variables CSS sur `:root` et `prefers-color-scheme`.
+- Design : variante « 2A — Wash » du projet Claude Design « Lancer la routine » (grand titre, dégradé rose en haut, carte centrale avec champ, idées de sujets, « Comment ça marche »). Thème clair uniquement, comme dans la maquette. JavaScript pur inline, aucune police ni bibliothèque externe.
+- Les états (envoi, lancée, erreur avec « Réessayer ») sont rendus dans `#statut`, construits avec le DOM (`createElement`, `textContent`), jamais avec `innerHTML`. Le lien « Suivre le travail » n'est créé que si l'adresse de session commence par `https://`. Garder cette approche.
+- En cas d'erreur, le message technique renvoyé par le relais est affiché en petit sous le texte du design : utile pour diagnostiquer (401, 404, « non configurée »).
+- Les fichiers `image-slot.js` et `support.js` du projet de design sont le moteur de l'outil de maquette : ne pas les copier dans le site.
 
 ## Vercel
 
