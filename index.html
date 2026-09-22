@@ -43,8 +43,12 @@
 
     header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-bottom: 46px; }
     .marque { font-weight: 700; font-size: 17px; letter-spacing: .24em; text-transform: uppercase; grid-column: 2; }
-    .projet { grid-column: 3; justify-self: end; display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; text-decoration: none; opacity: .72; }
-    .projet:hover { opacity: 1; }
+    .projet {
+      grid-column: 3; justify-self: end; display: inline-flex; align-items: center; gap: 7px;
+      font-size: 13.5px; text-decoration: none;
+      padding: 12px 6px; margin: -12px -6px; border-radius: 8px;
+    }
+    .projet:hover { text-decoration: underline; text-underline-offset: 3px; }
 
     h1 {
       margin: 0 auto 26px; max-width: 1000px; text-align: center;
@@ -69,7 +73,7 @@
     .idees span { font-size: 14px; color: var(--muted); }
     .idee {
       border: 1px solid oklch(0.88 0.002 90); background: var(--paper); color: oklch(0.2 0.002 90);
-      border-radius: 9px; padding: 8px 13px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all .15s ease;
+      border-radius: 9px; padding: 12px 13px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all .15s ease;
     }
     .idee:hover { border-color: oklch(0.6 0.002 90); }
 
